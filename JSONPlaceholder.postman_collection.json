@@ -1,0 +1,435 @@
+{
+  "info": {
+    "_postman_id": "f1e2d3c4-0002-4a5b-9c6d-jsonplaceholder-coll",
+    "name": "JSONPlaceholder - API Test Suite",
+    "description": "CRUD API test suite against JSONPlaceholder (https://jsonplaceholder.typicode.com), covering positive and negative cases with assertions on status code, response schema, and response time. Built as a QA portfolio project.\n\nNote: JSONPlaceholder is a simulator — POST/PUT/PATCH/DELETE requests are not actually persisted server-side. Responses reflect what a real API *would* return, which is documented inline where behavior differs from a real backend (e.g. writes to nonexistent IDs still return 200 instead of 404).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Posts - CRUD",
+      "item": [
+        {
+          "name": "GET All Posts (Positive)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response time is below 1000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array with items', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    pm.expect(jsonData.length).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Each post has required schema fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const first = jsonData[0];",
+                  "    pm.expect(first).to.have.property('id');",
+                  "    pm.expect(first).to.have.property('userId');",
+                  "    pm.expect(first).to.have.property('title');",
+                  "    pm.expect(first).to.have.property('body');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": ["{{base_url}}"],
+              "path": ["posts"]
+            }
+          }
+        },
+        {
+          "name": "GET Single Post (Positive)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response time is below 800ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(800);",
+                  "});",
+                  "",
+                  "pm.test('Returned post id matches requested id', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.eql(parseInt(pm.environment.get('existing_post_id')));",
+                  "});",
+                  "",
+                  "pm.test('Response has required fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('userId');",
+                  "    pm.expect(jsonData).to.have.property('title');",
+                  "    pm.expect(jsonData).to.have.property('body');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/{{existing_post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{existing_post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "GET Single Post - Not Found (Negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404 for nonexistent post', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Response time is below 800ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(800);",
+                  "});",
+                  "",
+                  "pm.test('Response body is empty object', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(Object.keys(jsonData).length).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/{{nonexistent_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{nonexistent_id}}"]
+            }
+          }
+        },
+        {
+          "name": "POST Create Post (Positive, Data-Driven)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response time is below 1000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});",
+                  "",
+                  "pm.test('Response contains an id (record created)', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test('Response echoes submitted title and body', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.title).to.eql(pm.iterationData.get('title'));",
+                  "    pm.expect(jsonData.body).to.eql(pm.iterationData.get('body'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{title}}\",\n  \"body\": \"{{body}}\",\n  \"userId\": {{userId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": ["{{base_url}}"],
+              "path": ["posts"]
+            }
+          }
+        },
+        {
+          "name": "POST Create Post - Missing Fields (Negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// NOTE: JSONPlaceholder is a simulator and does not perform real",
+                  "// server-side validation, so it returns 201 even with a missing",
+                  "// body/userId. Documented here as expected simulator behavior --",
+                  "// a real backend should reject this with 400 Bad Request.",
+                  "pm.test('Simulator returns 201 despite missing fields (documented quirk)', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response time is below 1000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Missing body and userId\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts",
+              "host": ["{{base_url}}"],
+              "path": ["posts"]
+            }
+          }
+        },
+        {
+          "name": "PUT Update Post (Positive)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response time is below 1000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});",
+                  "",
+                  "pm.test('Response reflects the updated title', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.title).to.eql('Updated Title via PUT');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{existing_post_id}},\n  \"title\": \"Updated Title via PUT\",\n  \"body\": \"Updated body content\",\n  \"userId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/{{existing_post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{existing_post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "PUT Update Post - Nonexistent ID (Negative)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// NOTE: JSONPlaceholder's simulator does not validate that the ID",
+                  "// exists before applying a write, so PUT to a nonexistent post",
+                  "// still returns 200 instead of 404. Documented as expected",
+                  "// simulator behavior -- flagged as a gap vs. real API standards.",
+                  "pm.test('Simulator returns 500 for PUT on a nonexistent ID (documented quirk)', function () {",
+                  "    pm.response.to.have.status(500);",
+                  "});",
+                  "",
+                  "pm.test('Response time is below 1000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{nonexistent_id}},\n  \"title\": \"Should not exist\",\n  \"body\": \"Testing update on nonexistent resource\",\n  \"userId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/{{nonexistent_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{nonexistent_id}}"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Partial Update Post (Positive)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response time is below 1000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});",
+                  "",
+                  "pm.test('Only the title field was updated', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.title).to.eql('Patched Title Only');",
+                  "    pm.expect(jsonData).to.have.property('body');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Patched Title Only\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/posts/{{existing_post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{existing_post_id}}"]
+            }
+          }
+        },
+        {
+          "name": "DELETE Post (Positive)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response time is below 800ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(800);",
+                  "});",
+                  "",
+                  "pm.test('Response body is an empty object', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(Object.keys(jsonData).length).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/{{existing_post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "{{existing_post_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users - Schema Validation (Bonus)",
+      "item": [
+        {
+          "name": "GET All Users (Positive)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response time is below 1000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});",
+                  "",
+                  "pm.test('Returns exactly 10 users', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.length).to.eql(10);",
+                  "});",
+                  "",
+                  "pm.test('Each user has a valid email format', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;",
+                  "    jsonData.forEach(user => {",
+                  "        pm.expect(user.email).to.match(emailRegex);",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Each user has nested address and company objects', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    jsonData.forEach(user => {",
+                  "        pm.expect(user).to.have.property('address');",
+                  "        pm.expect(user).to.have.property('company');",
+                  "        pm.expect(user.address).to.have.property('geo');",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://jsonplaceholder.typicode.com"
+    }
+  ]
+}

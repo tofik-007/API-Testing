@@ -1,0 +1,6 @@
+title,body,userId
+"QA Automation Notes","Notes on setting up a Postman + Newman pipeline",1
+"Boundary Value Analysis","Testing edge cases at min and max input ranges",2
+"Regression Suite Plan","Outline for the next regression cycle",3
+"","Post with an empty title to check handling",4
+"Special Characters Test","Body with symbols !@#$%^&*() and unicode ✓ ✔ 测试",5
